@@ -135,7 +135,7 @@ class object_detection:
 				P.point.x = obj_cam_x
 				P.point.y = obj_cam_y
 				P.point.z = Distance
-				'''
+
 				#Transform Point into map coordinates
 				trans_pt = self.tl.transformPoint('/map', P)
 
@@ -148,7 +148,7 @@ class object_detection:
 
 				#publish the message
 				self.object_location_pub.publish(obj_info_pub)
-				'''
+				
 
 		#Display the captured image
 		cv2.imshow("Image",np.hstack([img_cpy, cv_image]))
