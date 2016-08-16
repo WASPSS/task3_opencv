@@ -22,8 +22,6 @@ find_package(Eigen REQUIRED)
 
 add_message_files(
   FILES
-  AprilTagDetection.msg
-  AprilTagDetectionArray.msg
 )
 
 generate_messages(
@@ -33,7 +31,7 @@ generate_messages(
 )
 
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS 
   LIBRARIES apriltag_detector
   CATKIN_DEPENDS image_transport roscpp sensor_msgs geometry_msgs tf cv_bridge message_runtime std_msgs nodelet apriltags
   DEPENDS Eigen
