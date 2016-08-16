@@ -91,7 +91,12 @@ class object_detection:
 		mask2 = cv2.inRange(hsv, lower_red1, upper_red1)
 
 		#Find contours(borders) for the shapes in the image
-		contours, hierarchy = cv2.findContours(mask2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+		#NOTE if you get following error:
+		# contours, hierarchy = cv2.findContours(mask2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+		# ValueError: need more than two values to unpack
+		# change following line to:
+		# contours, hierarchy = cv2.findContours(mask2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+		_, contours, hierarchy = cv2.findContours(mask2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
 		#Pass through each contour and check if it has required properties to classify into required object
 		for x in range (len(contours)):
