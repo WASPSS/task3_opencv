@@ -18,9 +18,8 @@ import time
 from geometry_msgs.msg import PointStamped
 from sensor_msgs.msg import Image
 #import the custom message we created to store objects
-from object_detecter_2d.msg import object_loc
+from wasp_custom_msgs.msg import object_loc
 import tf
-from std_msgs.msg import String
 from math import hypot
 
 #Define Constants
@@ -54,8 +53,8 @@ class object_detection:
 		self.object_location_pub = rospy.Publisher("/object_location", object_loc, queue_size =1)
 		#original images is huge and creates lot of latency, therefore subscribe to compressed image
 
-		#self.image_sub = rospy.Subscriber("/camera/rgb/image_raw/compressed",CompressedImage, self.callback)
-		self.image_sub = rospy.Subscriber("/ardrone/image_raw",Image,self.callback)
+		self.image_sub = rospy.Subscriber("/camera/rgb/image_raw/compressed",CompressedImage, self.callback)
+		#self.image_sub = rospy.Subscriber("/ardrone/image_raw",Image,self.callback)
 		#Cv Bridge is used to convert images from ROS messages to numpy array for openCV and vice versa
 		self.bridge = CvBridge()
 		#Obejct to transform listener which will be used to transform the points from one coordinate system to other.
@@ -64,11 +63,11 @@ class object_detection:
 	#Callback function for subscribed image
 	def callback(self,data):
 		#The below two functions conver the compressed image to opencv Image
-		'''
+		#'''
 		np_arr = np.fromstring(data.data, np.uint8)
 		cv_image = cv2.imdecode(np_arr, cv2.CV_LOAD_IMAGE_COLOR)
-		'''
-		cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+		#'''
+		#cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
 		#Create copy of captured image
 		img_cpy = cv_image.copy()
 		#Color to HSV and Gray Scale conversion
@@ -88,7 +87,7 @@ class object_detection:
 		upper_green = np.array([97,255,255])
 
 		# Threshold the HSV image to get only single color portions
-		mask2 = cv2.inRange(hsv, lower_red1, upper_red1)
+		mask2 = cv2.inRange(hsv, lower_green, upper_green)
 
 		#Find contours(borders) for the shapes in the image
 		#NOTE if you get following error:
@@ -96,7 +95,7 @@ class object_detection:
 		# ValueError: need more than two values to unpack
 		# change following line to:
 		# contours, hierarchy = cv2.findContours(mask2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-		_, contours, hierarchy = cv2.findContours(mask2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+		contours, hierarchy = cv2.findContours(mask2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
 		#Pass through each contour and check if it has required properties to classify into required object
 		for x in range (len(contours)):
@@ -130,7 +129,8 @@ class object_detection:
 
 				#convert the x,y in camera frame to a geometric stamped point
 				P = PointStamped()
-				P.header.stamp = data.header.stamp
+				P.header.stamp = rospy.Time.now() - rospy.Time(23)
+				#print ('time: ', data.header.stamp)
 				P.header.frame_id = 'camera_rgb_optical_frame'
 				P.point.x = obj_cam_x
 				P.point.y = obj_cam_y
@@ -148,7 +148,7 @@ class object_detection:
 
 				#publish the message
 				self.object_location_pub.publish(obj_info_pub)
-				
+
 
 		#Display the captured image
 		cv2.imshow("Image",np.hstack([img_cpy, cv_image]))

@@ -23,6 +23,7 @@ using namespace std;
 #include <vector>
 #include <list>
 #include <sys/time.h>
+#include "wasp_custom_msgs/object_loc.h"
 
 // OpenCV library for easy access to USB camera and drawing of images
 // on screen
@@ -46,6 +47,7 @@ cv_bridge::CvImagePtr cv_ptr;
 cv::Mat image_new;
 cv::Mat image_gray;
 
+ros::Publisher object_location_pub;
 
 // utility function to provide current system time (used below in
 // determining frame rate at which images are being processed)
@@ -128,10 +130,10 @@ public:
     m_timing(false),
 
     m_width(640),
-    m_height(480),
-    m_tagSize(0.166),
-    m_fx(600),
-    m_fy(600),
+    m_height(360),
+    m_tagSize(0.099),
+    m_fx(623.709),
+    m_fy(582.226),
     m_px(m_width/2),
     m_py(m_height/2),
 
@@ -195,6 +197,13 @@ public:
     Eigen::Matrix3d fixed_rot = F*rotation;
     double yaw, pitch, roll;
     wRo_to_euler(fixed_rot, yaw, pitch, roll);
+    //Message to publish the APril tag ID's collected
+    wasp_custom_msgs::object_loc location;
+    location.ID = detection.id;
+    location.point.x = translation(0);
+    location.point.y = translation(1);
+    location.point.z = translation(2);
+    object_location_pub.publish(location);
 
     cout << "  distance=" << translation.norm()
          << "m, x=" << translation(0)
@@ -219,15 +228,15 @@ public:
     //      m_cap.retrieve(image);
 
     // detect April tags (requires a gray scale image)
-    
+
     cv::cvtColor(image, image_gray, CV_BGR2GRAY);
-    
+
     double t0;
     if (m_timing) {
       t0 = tic();
     }
     vector<AprilTags::TagDetection> detections = m_tagDetector->extractTags(image_gray);
-    
+
     if (m_timing) {
       double dt = tic()-t0;
       cout << "Extracting tags took " << dt << " seconds." << endl;
@@ -255,7 +264,7 @@ public:
 /*Create a global object so that the image callback can access its functions*/
 Demo demo;
 
-//Call Back function for camera subsciber 
+//Call Back function for camera subsciber
 void imageCallback(const sensor_msgs::ImageConstPtr& msg){
 cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
   //cv::imshow("view", cv_ptr->image);
@@ -274,6 +283,7 @@ int main(int argc, char* argv[]) {
   demo.setup();
   cout << "Initial setup executed"<<endl;
   image_transport::Subscriber sub = it.subscribe("/ardrone/image_raw", 1, imageCallback);
+  object_location_pub = nh.advertise<wasp_custom_msgs::object_loc>("object_location", 1);
   cout << "Image Subscriber executed"<<endl;
   ros::spin();
 
