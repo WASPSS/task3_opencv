@@ -282,6 +282,8 @@ int main(int argc, char* argv[]) {
 
   demo.setup();
   cout << "Initial setup executed"<<endl;
+  //run this command in terminal which converts the compressed image to normal image for decreasing the load on network.
+  //rosrun image_transport republish compressein:=/camera/rgb/image_raw _image_transport:=compressed raw out:=/camera/rgb/image_rawe
   image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_rawe", 1, imageCallback);
   object_location_pub = nh.advertise<wasp_custom_msgs::object_loc>("object_location", 1);
   cout << "Image Subscriber executed"<<endl;
