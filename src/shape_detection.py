@@ -80,7 +80,7 @@ class object_detection:
 		lower_red2 = np.array([160,100,100])
 		upper_red2 = np.array([179,255,255])
 		#Blue Thresholds
-		lower_blue = np.array([104,120,120])
+		lower_blue = np.array([104,110,110])
 		upper_blue = np.array([143,255,255])
 		#Green Thresholds
 		lower_green = np.array([60,60,46])
@@ -141,7 +141,7 @@ class object_detection:
 
 				#fill in the publisher object to publish
 				obj_info_pub = object_loc()
-				obj_info_pub.ID = 27 #ID for Circle need to be chnaged
+				obj_info_pub.ID = 27 #ID need to be changed
 				obj_info_pub.point.x = trans_pt.point.x
 				obj_info_pub.point.y = trans_pt.point.y
 				obj_info_pub.point.z = trans_pt.point.z
@@ -151,7 +151,7 @@ class object_detection:
 
 
 		#Display the captured image
-		cv2.imshow("Image",np.hstack([img_cpy, cv_image]))
+		cv2.imshow("Image",cv_image)
 		#cv2.imshow("HSV", hsv)
 		cv2.waitKey(1)
 
